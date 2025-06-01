@@ -46,6 +46,9 @@ def process_directory():
         if not input_images_dir.exists():
             print(f"⚠️ Directorio no encontrado: {input_images_dir}")
             continue
+        input_label_dir = input_path / label / "images"
+        output_label_dir = output_path
+        output_label_dir.mkdir(parents=True, exist_ok=True)
 
         for img_file in input_images_dir.glob("*.*"):
             if img_file.suffix.lower() not in [".png", ".jpg", ".jpeg"]:
