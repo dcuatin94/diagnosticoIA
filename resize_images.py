@@ -18,7 +18,7 @@ def process_directory():
     # No agregues 'images' aquí, ya que tu estructura es COVID/images
     for label in os.listdir(input_path):
         input_label_dir = input_path / label / "images"
-        output_label_dir = output_path / label / "images"
+        output_label_dir = output_path
         output_label_dir.mkdir(parents=True, exist_ok=True)
 
         for img_file in input_label_dir.glob("*.png"):
