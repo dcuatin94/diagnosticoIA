@@ -8,7 +8,7 @@ import albumentations as A
 
 class LungImageGenerator(Sequence):
     def __init__(self, base_dir, labels, image_size=(150, 150), batch_size=32, shuffle=True, augment=False):
-        self.base_dir = Path(base_dir) # Base dir ahora apunta a "datos/procesados"
+        self.base_dir = Path(base_dir)
         self.labels = labels
         self.image_size = image_size
         self.batch_size = batch_size
@@ -30,26 +30,22 @@ class LungImageGenerator(Sequence):
                 value=0
             ), # Traslación, escala y rotación combinadas
             A.RandomBrightnessContrast(brightness_limit=0.2, contrast_limit=0.2, p=0.3), # Brillo y contraste
-            A.GaussNoise(var_limit=(10.0, 50.0), p=0.2), # Ruido Gaussiano
-            # Puedes añadir más transformaciones aquí según sea necesario.
+            A.GaussNoise(var_limit=(10.0, 50.0), p=0.2),
         ])
 
 
     def _load_paths(self):
         data = []
         for label_index, label_name in enumerate(self.labels):
-            # DIRECTORIOS ACTUALIZADOS SEGÚN TU ESTRUCTURA
-            # base_dir/Clase/images y base_dir/Clase/masks
             img_dir = self.base_dir / label_name / "images"
             mask_dir = self.base_dir / label_name / "masks"
 
-            # Asegurarse de que los directorios existan
             if not img_dir.is_dir():
                 print(f"Advertencia: Directorio de imágenes no encontrado: {img_dir}")
                 continue
             if not mask_dir.is_dir():
                 print(f"Advertencia: Directorio de máscaras no encontrado: {mask_dir}")
-                continue #Remover si la precision baja
+                continue 
     
             for img_path in img_dir.glob("*.png"):
                 mask_path = mask_dir / img_path.name
@@ -67,10 +63,8 @@ class LungImageGenerator(Sequence):
         return len(self.data) // self.batch_size
 
     def _augment(self, img):
-        """
-        Aplica las transformaciones de Albumentations definidas en __init__.
-        Albumentations espera imágenes en formato NumPy (H, W, C) y tipo uint8.
-        """
+        #Aplica las transformaciones de Albumentations a una imagen.
+        
         augmented_image = self.augmentor(image=img)['image']
         return augmented_image
 
@@ -91,7 +85,7 @@ class LungImageGenerator(Sequence):
 
             img = cv2.resize(img, self.image_size)
 
-            # --- Manejo de Máscaras y CLAHE (ajustado para tu estructura) ---
+            # Manejo de máscaras
             if mask_path and os.path.exists(mask_path):
                 mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)
                 if mask is None:
@@ -110,9 +104,8 @@ class LungImageGenerator(Sequence):
                 clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
                 cl = clahe.apply(l)
                 img = cv2.cvtColor(cv2.merge((cl, a, b)), cv2.COLOR_LAB2RGB)
-            # ---------------------------------------------------------------------
-
-            # Asegurarse de que la imagen esté en uint8 antes de augmentar
+            
+            # Normalizar y aplicar augmentación
             img = np.clip(img, 0, 255).astype(np.uint8)
             if self.augment:
                 img = self._augment(img)

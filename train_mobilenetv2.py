@@ -1,16 +1,21 @@
 import os
+import json
 import tensorflow as tf
-from tensorflow.keras import layers, models # type: ignore
 import matplotlib.pyplot as plt
-from custom_data_loader import LungImageGenerator
+from tensorflow.keras import layers, models # type: ignore
+from diagnosticoIA.utils.custom_data_loader import LungImageGenerator
+from dotenv import load_dotenv
 
+# Cargar variables de entorno
+load_dotenv()
 # Configuración
-IMAGE_SIZE = (150, 150)
+IMAGE_SIZE = tuple(json.loads(os.getenv('IMAGE_SIZE')))
 BATCH_SIZE = 32
 EPOCHS = 15
-BASE_DIR = "datos/procesados_split" 
-LABELS = ["COVID", "Normal", "Viral_Pneumonia"]
-MODEL_SAVE_PATH = "models/mobilenetv2_model.h5"
+BASE_DIR = os.path.join(os.getenv('DIR_DATA_BASE'), "procesados_split")
+LABELS = json.loads(os.getenv('LABELS'))
+MODEL_SAVE_PATH = os.getenv('MODEL_PATH_H5')
+
 os.makedirs("models", exist_ok=True)
 # Generadores
 train_gen = LungImageGenerator(os.path.join(BASE_DIR, "train"), LABELS, image_size=IMAGE_SIZE, batch_size=BATCH_SIZE, shuffle=True, augment=True)

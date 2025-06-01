@@ -1,12 +1,17 @@
 import os
 import cv2
+import json
+import dotenv
 import numpy as np
 from pathlib import Path
 
+dotenv.load_dotenv()
+PATH_ORIGINAL = os.path.join(os.getenv('DIR_DATA_BASE'), "original")
+PATH_PROCESADOS = os.path.join(os.getenv('DIR_DATA_BASE'), "procesados")
 # Rutas
-input_path = Path("datos/original")
-output_path = Path("datos/procesados")
-target_size = (150, 150)
+input_path = Path(PATH_ORIGINAL)
+output_path = Path(PATH_PROCESADOS)
+target_size = json.loads(os.getenv('IMAGE_SIZE'))
 
 def apply_mask(image, mask):
     """Aplica la máscara binaria sobre la imagen original, ajustando tamaño y tipo."""

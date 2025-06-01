@@ -11,7 +11,7 @@ from datetime import datetime
 MODEL_PATH = "models/model_int8.tflite"
 IMAGE_SIZE = (150, 150)
 LABELS = ["COVID", "Normal", "Viral_Pneumonia"]
-CSV_PATH = "resultados.csv"
+CSV_PATH = "resultados.csv
 LOAD_NEW_DIR = "datos/load_new"
 os.makedirs(LOAD_NEW_DIR, exist_ok=True)
 MASK_NEW_DIR = "datos/mask_new"
@@ -38,6 +38,25 @@ def preprocess_image(image):
     img = img.astype(np.float32)
     return np.expand_dims(img, axis=0), img
 
+  def preprocess_image(image, mask=None):
+    image = image.resize(IMAGE_SIZE)
+    img = np.array(image).astype(np.float32)
+
+    if mask:
+        mask = mask.resize(IMAGE_SIZE).convert("L")
+        mask_np = np.array(mask) / 255.0
+        mask_np = np.expand_dims(mask_np, axis=-1)
+        img = img * mask_np
+    else:
+        lab = cv2.cvtColor(img.astype(np.uint8), cv2.COLOR_RGB2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0)
+        cl = clahe.apply(l)
+        img = cv2.cvtColor(cv2.merge((cl, a, b)), cv2.COLOR_LAB2RGB)
+
+    img = img / 255.0
+    return np.expand_dims(img, axis=0), img.astype(np.float32)
+
 def preprocess_for_tflite(img, input_details):
     if input_details['dtype'] == np.int8:
         scale, zero_point = input_details['quantization']
@@ -50,8 +69,14 @@ def predict_image(interpreter, image_batch):
     output_details = interpreter.get_output_details()[0]
     input_index = input_details["index"]
     output_index = output_details["index"]
-
     input_data = preprocess_for_tflite(image_batch, input_details)
+
+    
+    input_data = input_data.astype(np.float32)
+    interpreter.set_tensor(input_index, input_data)
+
+    # input_data = preprocess_for_tflite(image_batch, input_details)
+
     interpreter.set_tensor(input_index, input_data)
     interpreter.invoke()
     output = interpreter.get_tensor(output_index)
@@ -81,6 +106,7 @@ def guardar_resultado(nombre_archivo, resultado, probabilidades):
 
     df.to_csv(CSV_PATH, index=False)
 
+
 def generar_mascara_binaria(image_np, output_path):
     # Convertir a escala de grises
     gray = cv2.cvtColor(image_np, cv2.COLOR_RGB2GRAY)
@@ -109,7 +135,6 @@ def generar_mascara_binaria(image_np, output_path):
             cv2.drawContours(mask, [cnt], -1, 255, thickness=cv2.FILLED)
 
     cv2.imwrite(output_path, mask)
-
 
 # Interfaz de usuario
 st.set_page_config(page_title="🩺 Dashboard Diagnóstico Pulmonar", layout="wide")
@@ -153,6 +178,17 @@ with col1:
         with st.spinner("🧠 Procesando con modelo TFLite..."):
             interpreter = load_model()
             image_batch, processed_image = preprocess_image(image)
+
+    uploaded_mask = st.file_uploader("Máscara segmentada (opcional)", type=["jpg", "png"])
+
+    if uploaded_image:
+        image = Image.open(uploaded_image).convert("RGB")
+        mask = Image.open(uploaded_mask).convert("L") if uploaded_mask else None
+        st.image(image, caption="🖼️ Imagen original", use_column_width=True)
+
+        with st.spinner("🧠 Procesando con modelo TFLite..."):
+            interpreter = load_model()
+            image_batch, processed_image = preprocess_image(image, mask)
             prediction = predict_image(interpreter, image_batch)
             predicted_label = LABELS[np.argmax(prediction)]
 
@@ -160,13 +196,17 @@ with col1:
         st.bar_chart({LABELS[i]: float(p) for i, p in enumerate(prediction)})
         st.image(image, caption="🖼️ Imagen original", use_container_width=True)
         st.image(processed_image, caption="🔍 Imagen procesada", use_container_width=True)
-
+        st.image(processed_image, caption="🔍 Imagen procesada", use_column_width=True)
         guardar_resultado(
             nombre_archivo=uploaded_image.name,
             resultado=predicted_label,
             probabilidades=prediction
         )
         st.info("💾 Resultado almacenado en resultados.csv")
+
+with col2:
+    st.header("📊 Resultados & Evaluación")
+        st.info("💾 Resultado almacenado en `resultados.csv`")
 
 with col2:
     st.header("📊 Resultados & Evaluación")
@@ -185,3 +225,8 @@ with col2:
     if os.path.exists("evaluation_result.png"):
         st.subheader("🧪 Evaluación del modelo")
         st.image("evaluation_result.png", caption="Comparación: Etiquetas reales vs predichas", use_container_width=True)
+        st.image("training_accuracy.png", caption="Precisión por época", use_column_width=True)
+
+    if os.path.exists("evaluation_result.png"):
+        st.subheader("🧪 Evaluación del modelo")
+        st.image("evaluation_result.png", caption="Comparación: Etiquetas reales vs predichas", use_column_width=True)
