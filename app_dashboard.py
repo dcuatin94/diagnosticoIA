@@ -11,7 +11,7 @@ from datetime import datetime
 MODEL_PATH = "models/model_int8.tflite"
 IMAGE_SIZE = (150, 150)
 LABELS = ["COVID", "Normal", "Viral_Pneumonia"]
-CSV_PATH = "resultados.csv
+CSV_PATH = "resultados.csv"
 LOAD_NEW_DIR = "datos/load_new"
 os.makedirs(LOAD_NEW_DIR, exist_ok=True)
 MASK_NEW_DIR = "datos/mask_new"
@@ -191,7 +191,7 @@ with col1:
 
 with col2:
     st.header("📊 Resultados & Evaluación")
-        st.info("💾 Resultado almacenado en `resultados.csv`")
+    st.info("💾 Resultado almacenado en `resultados.csv`")
 
 with col2:
     st.header("📊 Resultados & Evaluación")

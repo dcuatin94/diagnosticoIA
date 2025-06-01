@@ -25,7 +25,8 @@ diagnosticoIA/
 │   └── custom_data_loader.py   # Generador personalizado para cargar imágenes y máscaras
 │
 ├── main.py                 # Pipeline principal (ejecuta todo el flujo)
-├── train_mobilenetv2.py    # Entrenamiento del modelo MobileNetV2
+├── dashboard.py            # Aplicación Streamlit (Interfaz de Usuario)
+|── train_mobilenetv2.py    # Entrenamiento del modelo MobileNetV2
 ├── evaluate_batch.py       # Evaluación por lotes del modelo
 ├── requirements.txt        # Dependencias del proyecto
 └── README.txt              # (Este archivo)
@@ -41,13 +42,18 @@ diagnosticoIA/
    - Divide los datos en conjuntos de entrenamiento y prueba (scripts/split_dataset.py).
 
 3. **Entrenamiento:**
-   - Entrena un modelo MobileNetV2 usando generadores personalizados (train_mobilenetv2.py o main.py).
+   - Entrena un modelo MobileNetV2 usando generadores personalizados (train_mobilenetv2.py).
 
 4. **Conversión:**
    - Convierte el modelo entrenado a formato TFLite para despliegue eficiente (scripts/converter_h5_tflite.py).
 
 5. **Evaluación:**
    - Evalúa el modelo en lotes y genera métricas de desempeño (evaluate_batch.py).
+
+6. **Despliegue:**
+   - Ejecutar `main.py` para ejecutar todo el flujo.
+   - Los modelos Keras y TFLite se guardan en la carpeta `models/` 
+   - Ejecutar  `streamlit run app_dashboard.py --server.port 8502` para ejecutar la interfaz de usuario.
 
 ## Clases y Scripts Principales
 
@@ -66,25 +72,29 @@ diagnosticoIA/
 
 - Python 3.8+
 - TensorFlow, OpenCV, Albumentations, scikit-learn, tqdm, dotenv, matplotlib
-- Ver `requirements.txt` para la lista completa
+- Instala las dependencias con `pip install -r requirements.txt`
+- Crear un archivo `datos/` con las carpetas `original/` y `procesados/`
 
 ## Notas
+
 - La estructura de carpetas de datos debe respetar el formato: `Clase/images/*.png` y `Clase/masks/*.png`.
 - El pipeline es modular y puede adaptarse fácilmente a nuevos datasets o modelos.
 
 ---
 
-#[!Nota]
-📊 Clasificación:
-                 precision    recall  f1-score   support
+# Resumen de Desempeño
+## 📊 Clasificación Evaluacion Batch:
 
-          COVID       0.84      0.72      0.78       724
-         Normal       0.90      0.94      0.92      2039
-Viral_Pneumonia       0.88      0.91      0.89       269
+                 Precision    Recall  F1-score   Support
+
+             COVID       0.84      0.72      0.78       724
+            Normal       0.90      0.94      0.92      2039
+      Viral Pneumonia    0.88      0.91      0.89       269
 
        accuracy                           0.88      3032
       macro avg       0.87      0.86      0.86      3032
-   weighted avg       0.88      0.88      0.88      3032
+      weighted avg    0.88      0.88      0.88      3032
 
+## ✅ Precisión total: 88.26%
 **Autor:** Daniel Cuatin, Miguel Guevara, Pedro Valverde
 **Fecha:** Junio 2025
