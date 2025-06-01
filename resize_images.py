@@ -40,23 +40,31 @@ def process_directory():
     for label in os.listdir(input_path):
         input_images_dir = input_path / label / "images"
         input_masks_dir = input_path / label / "masks"
-        output_dir = output_path / label
-        output_dir.mkdir(parents=True, exist_ok=True)
+        output_images_dir = output_path / label / "images"
+        output_masks_dir = output_path / label / "masks"
+        output_images_dir.mkdir(parents=True, exist_ok=True)
+        output_masks_dir.mkdir(parents=True, exist_ok=True)
 
-        if not input_images_dir.exists():
-            print(f"⚠️ Directorio no encontrado: {input_images_dir}")
-            continue
-        input_label_dir = input_path / label / "images"
-        output_label_dir = output_path
-        output_label_dir.mkdir(parents=True, exist_ok=True)
+        # Procesar imágenes
+        if input_images_dir.exists():
+            for img_file in input_images_dir.glob("*.*"):
+                if img_file.suffix.lower() not in [".png", ".jpg", ".jpeg"]:
+                    continue
+                mask_file = input_masks_dir / (img_file.stem + ".png")
+                output_file = output_images_dir / img_file.name
+                resize_and_save(img_file, mask_file, output_file)
 
-        for img_file in input_images_dir.glob("*.*"):
-            if img_file.suffix.lower() not in [".png", ".jpg", ".jpeg"]:
-                continue
-            # Asumimos que las máscaras son .png
-            mask_file = input_masks_dir / (img_file.stem + ".png")
-            output_file = output_dir / img_file.name
-            resize_and_save(img_file, mask_file, output_file)
+        # Procesar máscaras si existen
+        if input_masks_dir.exists():
+            for mask_file in input_masks_dir.glob("*.png"):
+                output_mask_file = output_masks_dir / mask_file.name
+                mask = cv2.imread(str(mask_file))
+                if mask is not None:
+                    resized_mask = cv2.resize(mask, target_size)
+                    cv2.imwrite(str(output_mask_file), resized_mask)
+                    print(f"✅ Máscara guardada: {output_mask_file}")
+                else:
+                    print(f"⚠️ No se pudo leer la máscara: {mask_file}")
 
 if __name__ == "__main__":
     process_directory()
