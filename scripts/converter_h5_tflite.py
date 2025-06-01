@@ -1,7 +1,10 @@
+import os
+import dotenv
 import tensorflow as tf
 
-MODEL_PATH = "models/mobilenetv2_model.h5"  # Ruta al modelo Keras
-TFLITE_PATH = "models/model_int8.tflite"
+dotenv.load_dotenv()
+MODEL_PATH = os.getenv('MODEL_PATH_H5')  # Ruta al modelo Keras
+TFLITE_PATH = os.getenv('MODEL_PATH_TFLITE')  # Ruta para guardar el modelo "models/model_int8.tflite"
 
 # Cargar modelo
 model = tf.keras.models.load_model(MODEL_PATH)

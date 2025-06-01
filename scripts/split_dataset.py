@@ -1,13 +1,15 @@
 import os
+import dotenv
+import json
 import shutil
 from sklearn.model_selection import train_test_split
 from pathlib import Path
 from tqdm import tqdm 
 
-SOURCE_ROOT_DIR = 'datos/procesados'
-DEST_ROOT_DIR = 'datos/procesados_split'
-
-CLASSES = ["COVID", "Normal", "Viral_Pneumonia"] 
+dotenv.load_dotenv()
+SOURCE_ROOT_DIR = os.path.join(os.getenv('DIR_DATA_BASE'), "procesados")
+DEST_ROOT_DIR = os.path.join(os.getenv('DIR_DATA_BASE'), "procesados_split")
+CLASSES = json.loads(os.getenv('LABELS'))
 
 # Ratio para el conjunto de prueba (ej. 0.2 para 20% de prueba, 80% de entrenamiento)
 TEST_SPLIT_RATIO = 0.2

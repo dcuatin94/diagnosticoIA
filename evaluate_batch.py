@@ -8,11 +8,15 @@ import tensorflow as tf
 from pathlib import Path
 from sklearn.metrics import classification_report, accuracy_score
 import matplotlib.pyplot as plt
+from dotenv import load_dotenv
+import json
 
-IMAGE_SIZE = (150, 150)
-DATA_DIR = "datos/procesados_split/test"
-MODEL_PATH = "models/model_int8.tflite"
-LABELS = ["COVID", "Normal", "Viral_Pneumonia"]
+load_dotenv()
+IMAGE_SIZE = tuple(json.loads(os.getenv('IMAGE_SIZE')))
+LABELS = json.loads(os.getenv('LABELS'))
+DATA_DIR = os.path.join(os.getenv('DIR_DATA_BASE'), "procesados_split", "test")
+MODEL_PATH = os.getenv('MODEL_PATH_TFLITE')
+
 label_map = {name: idx for idx, name in enumerate(LABELS)}
 
 @dask.delayed
@@ -21,7 +25,7 @@ def process_image(image_path, mask_path, label_idx):
     if img is None:
         return None, None
 
-    img = cv2.resize(img, IMAGE_SIZE)
+    img = cv2.resize(img, IMAGE_SIZE, interpolation=cv2.INTER_AREA)
 
     if os.path.exists(mask_path):
         mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
