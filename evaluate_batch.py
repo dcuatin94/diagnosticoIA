@@ -1,6 +1,9 @@
 import os
 import numpy as np
 import cv2
+import dask
+import dask.array as da
+from dask.diagnostics import ProgressBar
 import tensorflow as tf
 from pathlib import Path
 from sklearn.metrics import classification_report, accuracy_score
@@ -8,39 +11,47 @@ import matplotlib.pyplot as plt
 
 IMAGE_SIZE = (150, 150)
 DATA_DIR = "datos/procesados_split/test"
-MODEL_PATH = "model_int8.tflite"
+MODEL_PATH = "models/model_int8.tflite"
 LABELS = ["COVID", "Normal", "Viral_Pneumonia"]
 label_map = {name: idx for idx, name in enumerate(LABELS)}
 
+@dask.delayed
+def process_image(image_path, mask_path, label_idx):
+    img = cv2.imread(str(image_path))
+    if img is None:
+        return None, None
+
+    img = cv2.resize(img, IMAGE_SIZE)
+
+    if os.path.exists(mask_path):
+        mask = cv2.imread(str(mask_path), cv2.IMREAD_GRAYSCALE)
+        mask = cv2.resize(mask, IMAGE_SIZE) / 255.0
+        img = img * mask[..., np.newaxis]
+    else:
+        lab = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+        l, a, b = cv2.split(lab)
+        clahe = cv2.createCLAHE(clipLimit=2.0)
+        cl = clahe.apply(l)
+        img = cv2.cvtColor(cv2.merge((cl, a, b)), cv2.COLOR_LAB2RGB)
+
+    img = img.astype(np.float32) / 255.0
+    return img, label_idx
+
 def load_images_and_labels():
-    images, labels = [], []
+    tasks = []
     for label_name in LABELS:
-        img_dir = Path(DATA_DIR) / label_name / "imagenes"
-        mask_dir = Path(DATA_DIR) / label_name / "masks"
         label_idx = label_map[label_name]
-
+        img_dir = Path(DATA_DIR) / label_name / "images"
+        mask_dir = Path(DATA_DIR) / label_name / "masks"
+        
         for img_file in img_dir.glob("*.png"):
-            img = cv2.imread(str(img_file))
-            if img is None:
-                continue
-            img = cv2.resize(img, IMAGE_SIZE)
-
             mask_file = mask_dir / img_file.name
-            if mask_file.exists():
-                mask = cv2.imread(str(mask_file), cv2.IMREAD_GRAYSCALE)
-                mask = cv2.resize(mask, IMAGE_SIZE) / 255.0
-                img = img * mask[..., np.newaxis]
-            else:
-                lab = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
-                l, a, b = cv2.split(lab)
-                clahe = cv2.createCLAHE(clipLimit=2.0)
-                cl = clahe.apply(l)
-                img = cv2.cvtColor(cv2.merge((cl, a, b)), cv2.COLOR_LAB2RGB)
-
-            img = img.astype(np.float32) / 255.0
-            images.append(img)
-            labels.append(label_idx)
-
+            tasks.append(process_image(img_file, mask_file, label_idx))
+    
+    with ProgressBar():
+        results = dask.compute(*tasks)
+        
+    images, labels = zip(*[res for res in results if res[0] is not None])
     return np.array(images), np.array(labels)
 
 def preprocess_for_tflite(img, input_details):
