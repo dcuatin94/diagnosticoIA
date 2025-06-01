@@ -1,0 +1,26 @@
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Python cache
+__pycache__/
+
+# Byte-compiled files
+*.pyc
+*.pyo
+# Distribution / packaging
+.Python
+build/
+dist/
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+#datos
+data/
+datos/
