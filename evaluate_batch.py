@@ -112,5 +112,5 @@ class EvaluateModel:
         plt.legend()
         plt.grid()
         plt.tight_layout()
-        plt.savefig("evaluation_result.png")
+        plt.savefig("reports/evaluation_result.png")
         plt.show()

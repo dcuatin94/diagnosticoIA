@@ -97,5 +97,5 @@ class TrainModelMobilenetV2:
         plt.xlabel("Épocas")
         plt.ylabel("Accuracy")
         plt.grid()
-        plt.savefig("training_accuracy.png")
+        plt.savefig("reports/training_accuracy.png")
         plt.show()
