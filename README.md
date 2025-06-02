@@ -81,9 +81,14 @@ diagnosticoIA/
 - El pipeline es modular y puede adaptarse fácilmente a nuevos datasets o modelos.
 
 ---
+> [!NOTE]
+> # Resumen de Desempeño
 
-# Resumen de Desempeño
-## 📊 Clasificación Evaluacion Batch:
+### Precisión del modelo con MobileNetV2 en entrenamiento:
+
+[![Precisión del modelo con MobileNetV2](/diagnosticoIA/reports/training_accuracy.png)](training_accuracy.png)
+## Evaluación del modelo TFLite:
+## 📊Clasificación
 
                  Precision    Recall  F1-score   Support
 
@@ -95,6 +100,9 @@ diagnosticoIA/
       macro avg       0.87      0.86      0.86      3032
       weighted avg    0.88      0.88      0.88      3032
 
-## ✅ Precisión total: 88.26%
+- ### ✅ Precisión total: 88.26%
+
+[![Evaluación del modelo](/diagnosticoIA/evaluation_result.png)](evaluation_result.png) 
+
 **Autor:** Daniel Cuatin, Miguel Guevara, Pedro Valverde
 **Fecha:** Junio 2025
