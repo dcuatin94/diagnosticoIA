@@ -86,7 +86,7 @@ diagnosticoIA/
 
 ### Precisión del modelo con MobileNetV2 en entrenamiento:
 
-[![Precisión del modelo con MobileNetV2](/diagnosticoIA/reports/training_accuracy.png)](training_accuracy.png)
+[![Precisión del modelo con MobileNetV2](/reports/training_accuracy.png)](training_accuracy.png)
 ## Evaluación del modelo TFLite:
 ## 📊Clasificación
 
@@ -96,13 +96,13 @@ diagnosticoIA/
             Normal       0.90      0.94      0.92      2039
       Viral Pneumonia    0.88      0.91      0.89       269
 
-       accuracy                           0.88      3032
-      macro avg       0.87      0.86      0.86      3032
-      weighted avg    0.88      0.88      0.88      3032
+       accuracy                              0.88      3032
+      macro avg          0.87      0.86      0.86      3032
+      weighted avg       0.88      0.88      0.88      3032
 
 - ### ✅ Precisión total: 88.26%
 
-[![Evaluación del modelo](/diagnosticoIA/evaluation_result.png)](evaluation_result.png) 
+[![Evaluación del modelo](evaluation_result.png)](evaluation_result.png) 
 
 **Autor:** Daniel Cuatin, Miguel Guevara, Pedro Valverde
 **Fecha:** Junio 2025
